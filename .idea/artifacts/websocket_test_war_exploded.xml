@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="websocket_test:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/websocket_test_war_exploded</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="websocket_test/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="websocket_test" />
+        </element>
+      </element>
+      <element id="file-copy" path="D:/workspace/test/src/ConnectDB.java" />
+    </root>
+  </artifact>
+</component>

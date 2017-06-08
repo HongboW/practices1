@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-ear" name="websocket_test:ear exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/websocket_test_ear_exploded</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="websocket_test/javaeeApplication/javaEEApplication" />
+      <element id="directory" name="web.war">
+        <element id="artifact" artifact-name="websocket_test:war exploded" />
+      </element>
+    </root>
+  </artifact>
+</component>

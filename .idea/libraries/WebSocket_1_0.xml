@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="WebSocket-1.0" type="WebSocket">
+    <properties version="1.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-container-servlet.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-client.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-container-glassfish-cdi.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-spi.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-container-grizzly.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-server.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/javax.websocket-api.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-core.jar!/" />
+      <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-websocket-core.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket客户端</title>
+</head>
+<body>
+    <div>
+        <input type="submit" value="start" onclick="fn_start()">
+    </div>
+    <div id="messages"/>
+
+    <script type="text/javascript">
+        var webSocket = new WebSocket("ws://localhost:8080/wsstest/websocket_test");
+        webSocket.onerror = function (p1) { fn_onerror(p1); }
+        webSocket.onopen = function (p1) { fn_onopen(p1); }
+        webSocket.onmessage = function (p1) { fn_onmessage(p1); }
+
+        function fn_onerror(event) {
+            console.log(event);
+            alert(event.data);
+        }
+
+        function fn_onopen(event) {
+            document.getElementById("messages").innerHTML = 'Connection established';
+        }
+
+        function fn_onmessage(event) {
+            document.getElementById("messages").innerHTML += "<br />" + event.data;
+        }
+
+        function fn_start() {
+            webSocket.send("hello service!");
+            return false;
+        }
+    </script>
+</body>
+</html>

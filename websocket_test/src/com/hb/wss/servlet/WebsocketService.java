@@ -1,5 +1,7 @@
 package com.hb.wss.servlet;
 
+import com.hb.wss.dao.ConnectDB;
+
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -50,6 +52,7 @@ public class WebsocketService {
     }
     @OnOpen
     public void onOpen() {
+        ConnectDB cdb = new ConnectDB();
         System.out.println("Client connected");
     }
 

@@ -17,6 +17,7 @@ public class ArgumentDomain {
     private int jdbcType;
     /*参数值*/
     private Object val;
+    public ArgumentDomain () {}
     public String getName() {
         return name;
     }
@@ -75,5 +76,29 @@ public class ArgumentDomain {
 
     public void setVal(Object val) {
         this.val = val;
+    }
+
+    public int transferSQLType (String s_dataType) {
+        int i_sqlType = 12; //默认VARCHAR类型
+        if (dataType.equalsIgnoreCase("varchar2") || dataType.equalsIgnoreCase("varchar")) {
+            i_sqlType = Types.VARCHAR;
+        } else if (dataType.equalsIgnoreCase("int")) {
+            i_sqlType = Types.INTEGER;
+        } else if (dataType.equalsIgnoreCase("smallint")) {
+            i_sqlType = Types.SMALLINT;
+        } else if (dataType.equalsIgnoreCase("tinyint")) {
+            i_sqlType = Types.TINYINT;
+        } else if (dataType.equalsIgnoreCase("numeric")) {
+            i_sqlType = Types.NUMERIC;
+        } else if (dataType.equalsIgnoreCase("char")) {
+            i_sqlType = Types.CHAR;
+        } else if (dataType.equalsIgnoreCase("text") || dataType.equalsIgnoreCase("clob")) {
+            i_sqlType = Types.CLOB;
+        } else if (dataType.equalsIgnoreCase("datetime") || dataType.equalsIgnoreCase("date")) {
+            i_sqlType = Types.TIMESTAMP;
+        } else if (dataType.equalsIgnoreCase("ref cursor")) {
+            i_sqlType = oracle.jdbc.OracleTypes.CURSOR;    //Oracle游标类型
+        }
+        return i_sqlType;
     }
 }

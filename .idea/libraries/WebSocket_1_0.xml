@@ -11,6 +11,7 @@
       <root url="jar://$PROJECT_DIR$/websocket_test/lib/javax.websocket-api.jar!/" />
       <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-core.jar!/" />
       <root url="jar://$PROJECT_DIR$/websocket_test/lib/tyrus-websocket-core.jar!/" />
+      <root url="jar://E:/software/Java/libs/ojdbc6.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

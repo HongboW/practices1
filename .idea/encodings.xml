@@ -2,5 +2,6 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/websocket_test/src/com/hb/wss/servlet/WebsocketService.java" charset="UTF-8" />
+    <file url="file://D:/workspace/test/src/ConnectDB.java" charset="GBK" />
   </component>
 </project>

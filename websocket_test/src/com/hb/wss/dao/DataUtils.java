@@ -18,7 +18,7 @@ public class DataUtils extends ConnectDB {
      * @param arguments 参数集合(初始化时需要指定数据类型)
      * @return
      */
-    List<Map<String, Object>> execDQL(Connection conn, String sql, List<ArgumentDomain> arguments) {
+    public static List<Map<String, Object>> execDQL(Connection conn, String sql, List<ArgumentDomain> arguments) {
         List<Map<String, Object>> result = new ArrayList();
         if (sql.toUpperCase().indexOf("INSERT ") > 0 || sql.toUpperCase().indexOf("DELETE ") > 0 || sql.toUpperCase().indexOf("UPDATE ") > 0) return result;    //语句包含DML关键字
         if (sqlNotBegin(conn, sql, arguments)) return result;
@@ -48,7 +48,7 @@ public class DataUtils extends ConnectDB {
      * @param arguments 参数集合(初始化时需要指定数据类型)
      * @return
      */
-    int execDML(Connection conn, String sql, List<ArgumentDomain> arguments) {
+    public static int execDML(Connection conn, String sql, List<ArgumentDomain> arguments) {
         int sqlRowCount = 0;
         if (sqlNotBegin(conn, sql, arguments)) return sqlRowCount;
         PreparedStatement pre = null;   //初始化预编译对象
@@ -77,36 +77,25 @@ public class DataUtils extends ConnectDB {
      * @param arguments 参数集合(初始化时需要指定数据类型)
      * @return
      */
-    Map<String, Object> execPrc(Connection conn, String sql, Map<String, Object> arguments) {
+    public static Map<String, Object> execPrc(Connection conn, String sql, Map<String, Object> arguments) {
         Map<String, Object> result = new HashMap();
         if (conn == null) return result;    //数据库连接无效，退出
         String[] str = sql.split("\\.");    //分割包名与存储过程名
         /*查询存储过程执行参数*/
-        ArgumentDomain arg = new ArgumentDomain();
         List<ArgumentDomain> argList = new ArrayList();
         switch (str.length) {
             case 1: //"prc_name"
-                arg = new ArgumentDomain();
-                arg.setDataType("varchar");
-                arg.setVal(str[0]);
-                arg.setPosition(1);
-                argList.add(arg);
+                argList.add(new ArgumentDomain(1, "varchar", str[0]));
                 break;
             case 2: //"pkg_name.prc_name"
-                arg = new ArgumentDomain();
-                arg.setDataType("varchar");
-                arg.setVal(str[1]);
-                arg.setPosition(1);
-                argList.add(arg);
-                arg = new ArgumentDomain();
-                arg.setDataType("varchar");
-                arg.setVal(str[0]);
-                arg.setPosition(2);
-                argList.add(arg);
+                argList.add(new ArgumentDomain(1, "varchar", str[1]));
+                argList.add(new ArgumentDomain(2, "varchar", str[0]));
                 break;
             default:return result;
         }
-        String argSql = "SELECT /*+ RESULT_CACHE */ + lower(argument_name) as argument_name, lower(data_type) as data_type, lower(in_out) as in_out, position FROM user_arguments where object_name= upper(?) and package_name=upper(?) order by POSITION";
+        String argSql = "SELECT /*+ RESULT_CACHE */ + lower(argument_name) as argument_name, lower(data_type) as data_type, "
+                        + "lower(in_out) as in_out, position FROM user_arguments where object_name= upper(?) "
+                        + "and package_name " + ((str.length == 1) ? "is null" : "=upper(?)") + " order by POSITION";
         List<Map<String, Object>> paramList = execDQL(conn, argSql, argList);   //查询过程执行参数
         CallableStatement cstmt = null;
         /*存储过程执行语句初始化*/
@@ -125,6 +114,7 @@ public class DataUtils extends ConnectDB {
             cstmt = conn.prepareCall(prcSql.toString());    //预编译
             String in_out, argument_name, data_type;
             int position;
+            List<Map<String, Object>> outList = new ArrayList();
             for (Map<String, Object> map : paramList) {
                 in_out = map.get("IN_OUT").toString();
                 argument_name = map.get("ARGUMENT_NAME").toString();
@@ -132,58 +122,42 @@ public class DataUtils extends ConnectDB {
                 data_type = map.get("DATA_TYPE").toString();
                 if ("in".equalsIgnoreCase(in_out)) {
                     if (arguments.containsKey(argument_name)) {
-                        cstmt.setObject(position, arguments.get(argument_name), arg.transferSQLType(data_type));
+                        cstmt.setObject(position, arguments.get(argument_name), ArgumentDomain.transferSQLType(data_type));
                     } else {
                         System.err.println(str_date + "参数不正确！");
                         return result;
                     }
                 } else if ("out".equalsIgnoreCase(in_out)){
-                    cstmt.registerOutParameter(position, arg.transferSQLType(data_type));
+                    cstmt.registerOutParameter(position, ArgumentDomain.transferSQLType(data_type));
+                    outList.add(map);
                 }
             }
             cstmt.execute();    //执行
             /*出参处理*/
-            for (Map<String, Object> map : paramList) {
+            for (Map<String, Object> map : outList) {
                 in_out = map.get("IN_OUT").toString();
                 argument_name = map.get("ARGUMENT_NAME").toString();
                 position = ((BigDecimal)map.get("POSITION")).intValue();
-//                data_type = map.get("data_type").toString();
+                data_type = map.get("DATA_TYPE").toString();
                 if ("out".equalsIgnoreCase(in_out)) {
-                    result.put(argument_name, cstmt.getObject(position));
+                    if ("ref cursor".equalsIgnoreCase(data_type)) {
+                        result.put(argument_name, result2List((ResultSet) cstmt.getObject(position)));
+                    } else {
+                        result.put(argument_name, cstmt.getObject(position));
+                    }
                 }
             }
         } catch (SQLException e) {
             System.err.println(str_date + "SQL编译异常:" + e.getMessage());
+        } finally {
+            if (cstmt != null)
+                try {
+                    cstmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
         }
         return result;
-    }
-
-    /**
-     * 判断是否可以开始SQL操作
-     * @param conn 数据库连接
-     * @param sql 查询语句
-     * @param arguments 参数集合(初始化时需要指定数据类型)
-     * @return
-     */
-    boolean sqlNotBegin(Connection conn, String sql, List<ArgumentDomain> arguments) {
-        int index = sql.length() - sql.replace("?", "").length();
-        return conn == null || index != arguments.size();   //数据库连接无效或参数个数不匹配
-    }
-
-    /**
-     * 关闭对象
-     * @param rs
-     * @param pre
-     */
-    public void closeAll (ResultSet rs, PreparedStatement pre) {
-        try {
-            if (rs != null)
-                rs.close();
-            if (pre != null)
-                pre.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -192,7 +166,7 @@ public class DataUtils extends ConnectDB {
      * @param rs 结果集
      * @return
      */
-    public List<Map<String, Object>> result2List(ResultSet rs) {
+    public static List<Map<String, Object>> result2List(ResultSet rs) {
         List<Map<String, Object>> list = new ArrayList<>();
         ResultSetMetaData rsmd = null;
         Map<String, Object> map = null;
@@ -217,6 +191,34 @@ public class DataUtils extends ConnectDB {
             }
         }
         return list;
+    }
+
+    /**
+     * 关闭对象
+     * @param rs
+     * @param pre
+     */
+    private static void closeAll (ResultSet rs, PreparedStatement pre) {
+        try {
+            if (rs != null)
+                rs.close();
+            if (pre != null)
+                pre.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 判断是否可以开始SQL操作
+     * @param conn 数据库连接
+     * @param sql 查询语句
+     * @param arguments 参数集合(初始化时需要指定数据类型)
+     * @return
+     */
+    private static boolean sqlNotBegin(Connection conn, String sql, List<ArgumentDomain> arguments) {
+        int index = sql.length() - sql.replace("?", "").length();
+        return conn == null || index != arguments.size();   //数据库连接无效或参数个数不匹配
     }
 
 }

@@ -17,7 +17,11 @@ public class ArgumentDomain {
     private int jdbcType;
     /*参数值*/
     private Object val;
-    public ArgumentDomain () {}
+    public ArgumentDomain (int position, String dataType, Object val) {
+        this.setPosition(position);
+        this.setDataType(dataType);
+        this.setVal(val);
+    }
     public String getName() {
         return name;
     }
@@ -40,26 +44,7 @@ public class ArgumentDomain {
 
     public void setDataType(String dataType) {
         this.dataType = dataType;
-        if (dataType.equalsIgnoreCase("varchar2") || dataType.equalsIgnoreCase("varchar")) {
-            setJdbcType(Types.VARCHAR);
-        } else if (dataType.equalsIgnoreCase("int")) {
-            setJdbcType(Types.INTEGER);
-        } else if (dataType.equalsIgnoreCase("smallint")) {
-            setJdbcType(Types.SMALLINT);
-        } else if (dataType.equalsIgnoreCase("tinyint")) {
-            setJdbcType(Types.TINYINT);
-        } else if (dataType.equalsIgnoreCase("numeric")) {
-            setJdbcType(Types.NUMERIC);
-        } else if (dataType.equalsIgnoreCase("char")) {
-            setJdbcType(Types.CHAR);
-        } else if (dataType.equalsIgnoreCase("text") || dataType.equalsIgnoreCase("clob")) {
-            setJdbcType(Types.CLOB);
-        } else if (dataType.equalsIgnoreCase("datetime") || dataType.equalsIgnoreCase("date")) {
-            setJdbcType(Types.TIMESTAMP);
-        } else if (dataType.equalsIgnoreCase("ref cursor")) {
-            setJdbcType(oracle.jdbc.OracleTypes.CURSOR);    //Oracle游标类型
-        }
-
+        setJdbcType(transferSQLType(dataType));
     }
 
     public int getJdbcType() {
@@ -78,25 +63,25 @@ public class ArgumentDomain {
         this.val = val;
     }
 
-    public int transferSQLType (String s_dataType) {
+    public static int transferSQLType (String s_dataType) {
         int i_sqlType = 12; //默认VARCHAR类型
-        if (dataType.equalsIgnoreCase("varchar2") || dataType.equalsIgnoreCase("varchar")) {
+        if ("varchar2".equalsIgnoreCase(s_dataType) || "varchar".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.VARCHAR;
-        } else if (dataType.equalsIgnoreCase("int")) {
+        } else if ("int".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.INTEGER;
-        } else if (dataType.equalsIgnoreCase("smallint")) {
+        } else if ("smallint".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.SMALLINT;
-        } else if (dataType.equalsIgnoreCase("tinyint")) {
+        } else if ("tinyint".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.TINYINT;
-        } else if (dataType.equalsIgnoreCase("numeric")) {
+        } else if ("numeric".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.NUMERIC;
-        } else if (dataType.equalsIgnoreCase("char")) {
+        } else if ("char".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.CHAR;
-        } else if (dataType.equalsIgnoreCase("text") || dataType.equalsIgnoreCase("clob")) {
+        } else if ("text".equalsIgnoreCase(s_dataType) || "clob".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.CLOB;
-        } else if (dataType.equalsIgnoreCase("datetime") || dataType.equalsIgnoreCase("date")) {
+        } else if ("datetime".equalsIgnoreCase(s_dataType) || "date".equalsIgnoreCase(s_dataType)) {
             i_sqlType = Types.TIMESTAMP;
-        } else if (dataType.equalsIgnoreCase("ref cursor")) {
+        } else if ("ref cursor".equalsIgnoreCase(s_dataType)) {
             i_sqlType = oracle.jdbc.OracleTypes.CURSOR;    //Oracle游标类型
         }
         return i_sqlType;

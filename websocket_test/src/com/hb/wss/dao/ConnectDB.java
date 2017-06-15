@@ -1,8 +1,9 @@
 package com.hb.wss.dao;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
 
 /**
@@ -12,9 +13,8 @@ import java.util.Date;
  * Created by Hongbo on 2017/6/9.
  */
 public class ConnectDB {
-    protected String str_date = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date());
+    protected static String str_date = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date());
 
-    public ConnectDB () {}
     /**
      * 连接Oracle
      * @param ip 主机IP
@@ -24,7 +24,7 @@ public class ConnectDB {
      * @param password 密码
      * @return
      */
-    public Connection Connect4Oracle (String ip, Integer port, String sid, String user, String password) {
+    public static Connection Connect4Oracle (String ip, Integer port, String sid, String user, String password) {
         Connection conn = null;
         String url = "jdbc:oracle:thin:@" + ip + ":" + port + ":" + sid;	//数据库连接URL
         try {
@@ -41,7 +41,7 @@ public class ConnectDB {
      * 断开连接
      * @param conn
      */
-    public void disconn (Connection conn) {
+    public static void disconn (Connection conn) {
         if (conn != null)
             try {
                 conn.close();
@@ -55,7 +55,7 @@ public class ConnectDB {
      * 事务控制：开始
      * @param conn
      */
-    public void transBegin (Connection conn) {
+    public static void transBegin (Connection conn) {
         if (conn == null) return;
         try {
             if (conn.getAutoCommit()) {
@@ -69,7 +69,7 @@ public class ConnectDB {
      * 事务提交
      * @param conn
      */
-    public void transCommit (Connection conn) {
+    public static void transCommit (Connection conn) {
         if (conn == null) return;
         try {
             if (!conn.getAutoCommit()) {
@@ -83,7 +83,7 @@ public class ConnectDB {
      * 事务回滚
      * @param conn
      */
-    public void transRollback (Connection conn) {
+    public static void transRollback (Connection conn) {
         if (conn == null) return;
         try {
             if (conn.getAutoCommit()) {

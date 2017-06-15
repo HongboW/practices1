@@ -6,6 +6,10 @@
       <element id="directory" name="web.war">
         <element id="artifact" artifact-name="websocket_test:war exploded" />
       </element>
+      <element id="file-copy" path="D:/workspace/test/src/ConnectDB.java" />
+      <element id="directory" name="lib">
+        <element id="library" level="project" name="WebSocket-1.0" />
+      </element>
     </root>
   </artifact>
 </component>

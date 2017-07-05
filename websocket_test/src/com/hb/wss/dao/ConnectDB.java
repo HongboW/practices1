@@ -14,7 +14,16 @@ import java.util.Date;
  */
 public class ConnectDB {
     protected static String str_date = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date());
-
+    private static Connection conn = null;
+    public static Connection getConnection () {
+        if (conn == null) return null;
+        try {
+            return conn.isClosed() ? null : conn;
+        } catch (SQLException e) {
+            System.out.println("获取数据库连接异常：" + e.getMessage());
+            return null;
+        }
+    }
     /**
      * 连接Oracle
      * @param ip 主机IP
@@ -25,7 +34,6 @@ public class ConnectDB {
      * @return
      */
     public static Connection Connect4Oracle (String ip, Integer port, String sid, String user, String password) {
-        Connection conn = null;
         String url = "jdbc:oracle:thin:@" + ip + ":" + port + ":" + sid;	//数据库连接URL
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");			//反射获取数据库驱动类

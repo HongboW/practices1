@@ -1,6 +1,9 @@
-package com.hb.wss.dao;
+package com.hb.wss.utils;
 
+import com.hb.wss.dao.ConnectDB;
 import com.hb.wss.domain.ArgumentDomain;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -11,6 +14,7 @@ import java.util.*;
  * Created by Hongbo on 2017/6/10.
  */
 public class DataUtils extends ConnectDB {
+    static Logger logger = LogManager.getLogger(DataUtils.class.getName());
     /**
      * 查询
      * @param conn 数据库连接
@@ -32,9 +36,10 @@ public class DataUtils extends ConnectDB {
                 pre.setObject(argument.getPosition(), argument.getVal(), argument.getJdbcType());    //传值
             }
             rs = pre.executeQuery();
-            result.addAll(result2List(rs));
+            result.addAll(result2List(rs, false));
         } catch (SQLException e) {
-            System.err.println(str_date + "SQL编译异常！");
+            logger.error("SQL编译异常！" + e.getMessage());
+//            System.err.println(str_date + "SQL编译异常！");
         } finally {
             closeAll(rs, pre);
         }
@@ -48,7 +53,7 @@ public class DataUtils extends ConnectDB {
      * @param arguments 参数集合(初始化时需要指定数据类型)
      * @return
      */
-    public static int execDML(Connection conn, String sql, List<ArgumentDomain> arguments) {
+    public static int execDML(Connection conn, String sql, List<ArgumentDomain> arguments) throws SQLException {
         int sqlRowCount = 0;
         if (sqlNotBegin(conn, sql, arguments)) return sqlRowCount;
         PreparedStatement pre = null;   //初始化预编译对象
@@ -62,7 +67,9 @@ public class DataUtils extends ConnectDB {
             }
             sqlRowCount = pre.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(str_date + "SQL编译异常:" + e.getMessage());
+            logger.error("SQL编译异常:" + e.getMessage());
+//            System.err.println(str_date + "SQL编译异常:" + e.getMessage());
+            throw e;
         } finally {
             closeAll(rs, pre);
         }
@@ -124,7 +131,8 @@ public class DataUtils extends ConnectDB {
                     if (arguments.containsKey(argument_name)) {
                         cstmt.setObject(position, arguments.get(argument_name), ArgumentDomain.transferSQLType(data_type));
                     } else {
-                        System.err.println(str_date + "参数不正确！");
+//                        System.err.println(str_date + "参数不正确！");
+                        logger.error("参数不正确！");
                         return result;
                     }
                 } else if ("out".equalsIgnoreCase(in_out)){
@@ -141,14 +149,15 @@ public class DataUtils extends ConnectDB {
                 data_type = map.get("DATA_TYPE").toString();
                 if ("out".equalsIgnoreCase(in_out)) {
                     if ("ref cursor".equalsIgnoreCase(data_type)) {
-                        result.put(argument_name, result2List((ResultSet) cstmt.getObject(position)));
+                        result.put(argument_name, result2List((ResultSet) cstmt.getObject(position), true));
                     } else {
                         result.put(argument_name, cstmt.getObject(position));
                     }
                 }
             }
         } catch (SQLException e) {
-            System.err.println(str_date + "SQL编译异常:" + e.getMessage());
+            logger.error("SQL编译异常:" + e.getMessage());
+//            System.err.println(str_date + "SQL编译异常:" + e.getMessage());
         } finally {
             if (cstmt != null)
                 try {
@@ -166,7 +175,7 @@ public class DataUtils extends ConnectDB {
      * @param rs 结果集
      * @return
      */
-    public static List<Map<String, Object>> result2List(ResultSet rs) {
+    public static List<Map<String, Object>> result2List(ResultSet rs, boolean key2lower) {
         List<Map<String, Object>> list = new ArrayList<>();
         ResultSetMetaData rsmd = null;
         Map<String, Object> map = null;
@@ -175,7 +184,7 @@ public class DataUtils extends ConnectDB {
                 rsmd = rs.getMetaData();
                 map = new LinkedHashMap<>();	//确保各列顺序
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    map.put(rsmd.getColumnLabel(i), rs.getObject(i));
+                    map.put(key2lower ? rsmd.getColumnLabel(i).toLowerCase() : rsmd.getColumnLabel(i), (rs.getObject(i) == null || "null".equals(rs.getObject(i))) ? "" : rs.getObject(i)); //将key转为小写
                 }
                 list.add(map);
             }
